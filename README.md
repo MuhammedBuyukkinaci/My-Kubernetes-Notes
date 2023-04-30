@@ -169,6 +169,73 @@ minikube stop
 
 27) We can use [play-with-k8s](https://labs.play-with-k8s.com/) to use k8s if we can't install k8s on local computer os we can't use cloud services.
 
+# Kubernetes 101
+
+1) The default config file of kubectl is ~/.kube/config. We can connect to many k8s cluster by configuring config file. We can connect to the same cluster via different users.
+
+```config
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority: /home/muhammed/.minikube/ca.crt
+    extensions:
+    - extension:
+        last-update: Sat, 29 Apr 2023 13:59:26 +03
+        provider: minikube.sigs.k8s.io
+        version: v1.30.1
+      name: cluster_info
+    server: https://192.168.49.2:8443
+  name: minikube
+contexts:
+- context:
+    cluster: minikube
+    extensions:
+    - extension:
+        last-update: Sat, 29 Apr 2023 13:59:26 +03
+        provider: minikube.sigs.k8s.io
+        version: v1.30.1
+      name: context_info
+    namespace: default
+    user: minikube
+  name: minikube
+current-context: minikube
+kind: Config
+preferences: {}
+users:
+- name: minikube
+  user:
+    client-certificate: /home/muhammed/.minikube/profiles/minikube/client.crt
+    client-key: /home/muhammed/.minikube/profiles/minikube/client.key
+
+```
+
+2) A config file composed of many contexts below. Contexts are created via joining users, connection information and namespaces(maybe)
+
+![config](./images/006.png)
+
+3) A config file mainly is composed of 3 components: clusters, contexts, users.
+
+4) To list commands available with kubectl, run `kubectl config`.
+
+5) To list available contexts, run `kubectl config get-contexts`. 
+
+6) THere can be many contexts but one of them can be used at the same time. The commands that we entered are run on current context. To see the current context, run the following
+
+```shellscript
+kubectl config current-context
+```
+
+7) To switch context
+
+```shellscript
+kubectl config use-context CONTEXT_NAME_TO_CHANGE
+```
+
+8)
+
+
+
+
 
 
 
