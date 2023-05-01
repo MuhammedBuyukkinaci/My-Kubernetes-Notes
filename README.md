@@ -219,7 +219,7 @@ users:
 
 5) To list available contexts, run `kubectl config get-contexts`. 
 
-6) THere can be many contexts but one of them can be used at the same time. The commands that we entered are run on current context. To see the current context, run the following
+6) There can be many contexts but one of them can be used at the same time. The commands that we entered are run on current context. To see the current context, run the following
 
 ```shellscript
 kubectl config current-context
@@ -231,7 +231,128 @@ kubectl config current-context
 kubectl config use-context CONTEXT_NAME_TO_CHANGE
 ```
 
-8)
+8) To learn information of cluster
+
+```shellscript
+kubectl cluster-info
+```
+
+9) To learn more about a kubectl command, use `--help` flag. An example is `kubectl cp --help`.
+
+10) The general pattern of kubectl is `kubectl ACTION OBJECT_TYPE OBJECT_NAME`. An example is `kubectl delete pods my-pod-1`. The example will delete the pod named my-pod-1.
+
+11) To remove an object, run `kubectl delete pods testpod`.
+
+12) If we don't specify namespace, the default namespace will be chosen. We can specify the namespace via `-n NAMESPACE_NAME`. An example is `kubectl get pods -n kube-system`.
+
+13) To list pods in all namespaces, trigger `kubectl get pods --all-namespaces` or `kubectl get pods -A`.
+
+14) To change the outpur format of kubectl command, enter `-o OUTPUT_FORMAT`. An example is `kubectl get pods -o wide`. `json`, `yaml`, `jsonpath`, `go-template`, `ysjon`, `custom-columns` are other output formats.
+
+15) `jq` is a program on linux, running on Terminal.
+
+16) If we want to learn more about a k8s object, we can use `kubectl explain OBJECT_TYPE`. An example is `kubectl explain pod` or `kubectl explain deployment`.
+
+## K8s objects
+
+17) Different K8s objects are below:
+
+![config](./images/007.png)
+
+18) Pod is the most basic object. It is the smallest object in k8s. Pod can have 1 or many containers at the same time. In 99% of cases, one pod has one container. Each pod has a unique identifier(UID) and a unique localhost. Contaiers which are in the same pod are run in the same worker node.
+
+19) To create a pod in k8s
+
+```shellscript
+kubectl run POD_NAME_HERE --image=IMAGE_NAME_HERE
+```
+
+20) The status of all pods. READY means how many containers are running in the pod. NODE shows us on which node the pod is running.
+
+![config](./images/008.png)
+
+21) To learn more about a specific pod, we can use `kubectl describe OBJECT_TYPE OBJECT_NAME`. An example is `kubectl describe deployments mydeployment`.
+
+```shellscript
+kubectl describe pods POD_NAME
+```
+
+22) To see logs of a pod
+
+```shellscript
+kubectl logs POD_NAME
+
+# For live tracking
+kubectl logs -f POD_NAME
+```
+
+23) To run a command inside a pod
+
+```shellscript
+# hostname command triggered on pod named firstpod
+kubectl exec POD_NAME -- hostname
+# ls command triggered
+kubectl exec POD_NAME -- ls /
+```
+
+24) To enter inside a pod, run the following
+
+```shellscript
+kubectl exec -it POD_NAME -- /bin/sh
+# if there are more than 1 container in a pod, specify the container via "-c CONTAINER_NAME".
+kubectl exec -it POD_NAME -c CONTAINER_NAME -- /bin/sh
+```
+
+25) To delete a pod
+
+```shellscript
+kubectl delete pods POD_NAME
+```
+
+26) We don't create pods using typing commands generally. We use YAML files among k8s. THe advantage of using yaml files is to keep track using **git**. YAML is preferred over JSON. Indentation cares in YAML. 2 or 4 spaces are possile but choose one of them.
+
+27) **apiVersion**, **kind** and **metadata** are 3 mandatory keys texisting in definitions of k8s objects. They have to exist. **spec** also exists among most of the objects but it is not mandatory. **kind** means what type of object to create(pod, service or deployment). apiVersion can be detected by triggering `kubectl explain OBJECT_TYPE` or `kubectl explain pod`. **metadata** means unique identifiers that we specify for this object. **metadata** isn't taking a single string value like **apiVersion** or **kind**. **metadata** is a dictionary. **metadata** takes __name__, __namespaces__, __annotations__, __labels__.
+
+```objectbasetemplate.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: firstpod
+  labels:
+    app: frontend
+spec:
+  containers:
+    - name: nginx
+      image: nginx:latest
+      ports:
+      - containerPort: 80
+      
+```
+
+28) To create a pod using yaml file, trigger `kubectl apply -f pod1.yaml`.
+
+29) `kubetctl edit pods firstpod` is a way to make a change on an existing object(the object is pod here). This way isn't recommended. Using YAML files in git is more preferrable.
+
+30) Lifecycle of a pod
+
+  - Send yaml file to API Server
+  - API Server assigns unique ID to pod and saves this information on etcd.
+  - Pod created but its status is pending.
+  - Kube-scheduler checks etcd and chooses the most appropriate worker node for the pod.
+  - Pod passes to the status of creating.
+  - kubelet(working on worker node) checks etcd and creates containers(pod).
+
+31) Containers in a pod have a restart policy. It is one of these: **Always** | **On-failure** | **Never**. The default is Always. __restartPolicy__ in a yaml file should be set under **spec**.
+
+32) ImagePullBackOff is an error message meaning that an error occured while pulling the image to make up a pod. It is probably due to a typo or a connection error. CrashLoopBackOff is an error message meaning that an error occurred while creating the containers of a pod.
+
+33) `-w` can be appended to the end of any kubectl command. `-w` means watch what is going on. `kubectl get pods -w` is an example.
+
+34) One pod may have multiple containers. This is useful whena tracking application(fluentd, sentry etc) tracks our main application(Jjongo, Spring Boot etc). Container which are in the same pod can connect to each other via localhost. Their IP addresses are the same. No configuration needed. One volume can be mounted to both containers which are in the same pod.
+
+35) Sidecar container is the second container in a pod if it exists. Related to above point(34).  
+
+
 
 
 
