@@ -259,7 +259,7 @@ kubectl cluster-info
 
 ![config](./images/007.png)
 
-18) Pod is the most basic object. It is the smallest object in k8s. Pod can have 1 or many containers at the same time. In 99% of cases, one pod has one container. Each pod has a unique identifier(UID) and a unique localhost. Contaiers which are in the same pod are run in the same worker node.
+18) Pod is the most basic object. It is the smallest object in k8s. Pod can have 1 or many containers at the same time. In 99% of cases, one pod has one container. Each pod has a unique identifier(UID) and a unique localhost. Contaiers which are in the same pod are run in the same worker node. Look at **files/pods/base.yaml**.
 
 19) To create a pod in k8s
 
@@ -329,7 +329,7 @@ spec:
       
 ```
 
-28) To create a pod using yaml file, trigger `kubectl apply -f pod1.yaml`.
+28) To create a pod using yaml file, trigger `kubectl apply -f pod1.yaml`. Take a look at **files/pods/pod1.yaml**.
 
 29) `kubetctl edit pods firstpod` is a way to make a change on an existing object(the object is pod here). This way isn't recommended. Using YAML files in git is more preferrable.
 
@@ -348,9 +348,334 @@ spec:
 
 33) `-w` can be appended to the end of any kubectl command. `-w` means watch what is going on. `kubectl get pods -w` is an example.
 
-34) One pod may have multiple containers. This is useful whena tracking application(fluentd, sentry etc) tracks our main application(Jjongo, Spring Boot etc). Container which are in the same pod can connect to each other via localhost. Their IP addresses are the same. No configuration needed. One volume can be mounted to both containers which are in the same pod.
+### Multi Containers Pod
+
+34) One pod may have multiple containers. This is useful when tracking application(fluentd, sentry etc) tracks our main application(Jjongo, Spring Boot etc). Containers which are in the same pod can connect to each other via localhost. Their IP addresses are the same. No configuration needed. One volume can be mounted to both containers which are in the same pod. **files/pods/podmulticontainer.yaml**
 
 35) Sidecar container is the second container in a pod if it exists. Related to above point(34).  
+
+36) There is another way to create a second container in a pod. It is called **init container**. It is called at the beginning phase of pod creation. After it works, it is destroyed and the main container is created secondly. An example init container is that the app which is in init container pulls latest configurations from a source and makes is ready for app container. Take a look at **files/pods/podinitcontainer.yaml** .
+
+### Labels & Selectors
+
+37) labels can be assigned to different types of objects in k8s. They work through key-value pairs. One example label is **team: development**. They can be assigned during the creation phase of objects or after the creation phase. This way is more declarative. The connections between objects are built via labels among k8s. Service and Deployment objects determine which pods to connect via labels.
+
+![config](./images/009.png)
+
+38) It is a good practice to have a separate file for each k8s object. However, we can have multiple configuration files for multiple objects in a single file by putting a `---` between definitions. Take a look at **files/pods/podinitcontainer.yaml**.
+
+39) Selector is to filter all pods having labels whose key is app. It is used in binding objects to each other. Selector is so important.
+
+```shellscript
+# the pods having app key value
+kubectl get pods -l "app" --show-labels
+# the pods having app=firstapp
+kubectl get pods -l "app=firstapp" --show-labels
+# the pods having app=firstapp and tier=frontend
+kubectl get pods -l "app=firstapp,tier=frontend" --show-labels
+# the pods having app=firstapp and tier!=frontend
+kubectl get pods -l "app=firstapp,tier!=frontend" --show-labels
+# the pods having app key and tier=frontend
+kubectl get pods -l "app=firstapp,tier=frontend" --show-labels
+# the pods having app key=
+kubectl get pods -l "app=firstapp" --show-labels
+# set based syntax, app=firstapp
+kubectl get pods -l 'app in (firstapp)' --show-labels
+# app != firstapp
+kubectl get pods -l 'app notin (firstapp)' --show-labels
+# app should exist but app != firstapp
+kubectl get pods -l 'app, app notin (firstapp)' --show-labels
+# app is either firstapp or secondapp
+kubectl get pods -l 'app in (firstapp, secondapp)' --show-labels
+# app key not existing
+kubectl get pods -l '!app' --show-labels
+```
+
+40) To assign a label(app=thirdapp) to an existing pod
+
+```shellscript
+kubectl label pods POD_NAME app=thirdapp
+# To assign a label named hddtype=ssd to a node named minikube
+kubectl label nodes minikube hddtype=ssd
+```
+
+41) To delete a label(whose key is app) from an existing pod
+
+```shellscript
+kubectl label pods POD_NAME app-
+```
+
+42) To update a label of a pod(it was app=thirdapp but now app=fourapp)
+
+```shellscript
+kubectl label --overwrite pods POD_NAME app=fourapp
+```
+
+43) To add a label(foo=bar) to all pods
+
+```shellscript
+kubectl label pods --all foo=bar
+```
+
+44) labels enable us to bind objects to each other. We can decide where to create a pod using labels. We can assign pods requiring fast I/O operations to SSD's and pods not requiring fast I/O operations to HDD's.
+
+45) To delete all objects created by a YAML file
+
+```shell
+kubectl delete -f YAML_FILE.yaml
+```
+
+### Annotations
+
+46) Annotation is another way to append metadata as label. It is used in where we can't apply label.
+
+47) Annotations are defined under metadata in yaml file. This is similar to labels.
+
+48) We can add annotations imperatively or declaratively. Its syntax is similar to labels.
+
+### Namespaces
+
+![config](./images/010.png)
+
+49) Namespaces are k8s objects too. Namespaces are similar to folders for file servers. Namespace is a way to split k8s cluster into multiple users. Let's assume we have a k8s cluster composed of 18 VM's. We want to allocate 10 machines to team 1, 6 machines to team 2, 2 machines to team 3. We can do this via namespaces.
+
+50) Namespaces are used for 2 purposes: Limiting resources and arranging accesses.
+
+51) When a k8s cluster is set up, 4 namespaces are created. **kube-node-lease**, **kube-public**, **kube-system** are 3 namespaces that deal with k8s configurations. **default** is the default namespace on which k8s objects are created if we specify otherwise.
+
+
+52) To list namespaces
+
+```shell
+kubectl get namespaces
+```
+
+53) To list pods in a specific namespace
+
+```shell
+kubectl get pods --name NAMESPACE_NAME
+kubectl get pods --n NAMESPACE_NAME
+# to list all pods in all namespaces
+kubectl get pods --all-namespaces
+```
+
+54) To create a namespace
+
+```shell
+kubectl create namespace NAMESPACE_NAME_TO_CREATE
+```
+
+55) We can define namespaces in yaml files declaratively. Look at **files/pods/podnamespace.yaml** . It creates a namespaces named development and creates a pod who is binded to development namespace.
+
+56) To change namespace for kubectl to development namespace
+
+```shell
+kubectl config set-context --current --namespace=development
+# return it back to default
+kubectl config set-context --current --namespace=default
+```
+
+57) To delete a namespace(deleting all pods in the namespace). Use it cautiously.
+
+```shell
+kubectl delete namespaces NAMESPACE_TO_DELETE 
+```
+
+### Deployments
+
+58) Generally, we don't create singleton pods. We create high-level objects that manage pods. One of these high-level objects is deployment.
+
+59) Deployment is a k8s objects that pursues a desired state. It is a high-level object that manage low-level objects like pods. It can be defined in a yaml file declaratively.
+
+60) To create a deployment objects via kubectl
+
+```shell
+kubectl create deployment firstdeployment --image=nginx:latest --replicas=2
+```
+
+61) To list deployment objects
+
+```shell
+kubectl get deployments
+```
+
+62) It is the best practice to use deployment objects rather than singleton pods even if we desire to create a single pod.
+
+63) To change image of pods in a deployment object named firstdeployment(from nginx to httpd)
+
+```shell
+kubectl set image deployment/firstdeployment nginx=httpd
+```
+
+64) To scale(increase or decrease) pod numbers in a deployment object
+
+```
+kubectl scale deployment firstdeployment --replicas=6
+```
+
+65) To delete a deployment object
+
+```shell
+kubectl delete deployments firstdeployment
+```
+
+66) To create a deployment object via yaml files, we specify specifications via spec > template. Take a look at **files/deployments/deployment_example.yaml**. Deployment objects decide to manage which objects via **selector** key in yaml file. There should be at least 1 selector and the same labels should exist under **template > metadata > labels** .
+
+67) If we create multiple deployments objects, it is required for us to use different labels & selectors.
+
+### ReplicaSet
+
+68) There was a replication controller. Then, it was divided into deployment and replicaset. The goal of Replica set is to create desired number of pods and keep the desired state. Deployment is a high level object of ReplicaSet.
+
+69) From high level to low level: Deployment > ReplicaSet > Pod.
+
+69) To undo changes happened to an object(roll back on firstdeployment object whose type is deployment). rollout undo doesn't work for replicaset objects.
+
+```shell
+kubectl rollout undo deployment firstdeployment
+# to roll back to a specific revision
+kubectl rollout undo deployment firstdeployment --to-revision=1
+```
+
+70) It is the best practice not to deal with ReplicaSet. Prefer dealing with deployments.
+
+### Rollout & Rollback
+
+71) It is used under spec. It means what to do when a modification happens to pods(imperatively or declaratively). **type: Recreate** means terminate all previos pods and create new ones. Take a look at **files/deployments/deploymentrecreate.yaml**.
+
+```a.yaml
+spec:
+  strategy:
+    type: Recreate
+```
+
+72) **type: RollingUpdate** is the default value. It is the opposite of **type: Recreate**. It isn't terminating all pods initially. It creates new pods step by step. The default maxSurge and maxUnavailable values are 25% by default.
+
+```a.yaml
+spec:
+  strategy:
+    type: RollingUpdate
+    RollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+```
+
+73) To view changes applied to rolldeployment object
+
+```shell
+kubectl rollout history deployment rolldeployment
+# to see changes in a specific version(version 2)
+kubectl rollout history deployment rolldeployment --revision=2
+```
+
+74) To see phases of a deployment
+
+```shell
+kubectl rollout status deployment rolldeployment -w
+```
+
+75) To stop a new deployment
+
+```shell
+kubectl rollout pause deployment rolldeployment
+```
+
+75) To resume a stopped deployment
+
+```shell
+kubectl rollout resume deployment rolldeployment
+```
+
+### Kubernetes Network
+
+76) Some rules are below:
+
+  - A CIDR block(POD Network CIDR) exists when setting up a k8s cluster
+  - Each pod having a unique IP
+  - All pods in a cluster can communicate with each other without restriction.
+
+77) CNCF introduced CNI(Container Network Interface) to deal with network configurations. Take a look at some CNI's via [here](https://github.com/containernetworking/cni) or [here](https://kubernetes.io/docs/concepts/cluster-administration/networking/). [Calico](https://github.com/projectcalico/calico) is the most popular plugin.
+
+
+### Service
+
+78) Service is a k8s object. It can be defined in a yaml file declaratively or using kubectl imperatively. It is related to networking. Pod are behind Service objects. It provides service discovery and load balancing basically. 4 types of Service objects are below:
+  - ClusterIP: It can be used in binding frontend appications to backend applications internally.
+  - NodePort: Enables us to publish our apps to outer networks and internet.
+  - LoadBalancer: Can be used in managed k8s services only.
+  - ExternalName:
+
+79) Selectors are so important in services. Service objects(type=ClusterIp) are linked to backend object after triggering **files/services/serviceClusterIp.yaml**. Then, enter frontend pod and trigger **nslookup backend**. It will return **backend.default.svc.cluster.local**, which is **name.namespace_name.svc.cluster_domain**. Requests from frontend pods to backend pods go through ClusterIp services.
+
+80) In order to access to fronted pods from internet, run **files/services/serviceNodePort.yaml** and trigger `minikube service --url frontend` and paste the output to browser.
+
+81) To list services
+
+```shell
+kubectl get service
+```
+
+82) To create a ClusterIp service imperatively
+
+```shell
+kubectl expose deployment backend --type=ClusterIp --name=backend
+```
+
+83) To create a NodePort service imperatively
+
+```shell
+kubectl expose deployment frontend --type=NodePort --name=frontend
+```
+
+84) To list endpoints of services(endpoint is a k8s object too)
+
+```shell
+kubectl get endpoints
+```
+
+### Liveness Probes
+
+85) We can check health of our applications using Liveness probes. The response of health check may result in restarting.
+
+![liveness_probes](./images/011.png)
+
+86) Some liveness probes. Take a look at **files/liveready/liveness.yaml**
+
+  - Http checks
+  - Script checks on bash
+  - TCP socket checks
+
+### Readiness Probes
+
+![liveness_probes](./images/012.png)
+
+87) It is used in checking whether pod is ready to accepts traffic or not. If readiness probe is ok, pods are created and located behind Service.
+
+### Resource Limits
+
+88) The default CPU/RAM behavior is limitless. An example file is **files/requestlimit/requestlimit.yaml**.
+
+```requestlimit.yaml
+resources:
+  requests:
+    memory: "64M"
+    cpu: "250m"
+  limits:
+    memory: "256M"
+    cpu: "0.5"
+```
+
+89) **requests** flag means the required resource to create the pod. **limits** means the required resource that can be allocated to the pod if required. If a pod exceeds RAM limit, it will prompt an OOM(Out of Memory) error and pods will restart. However, the same thing isn't valid for CPU limit. Exceeding CPU Limit isn't possible.
+
+### Environment Variables
+
+90) We shouldn't hard-code some credentials. You should pass them via environment variables. Take a look at **files/pods/podenv.yaml**
+
+
+
+
+
+
 
 
 
