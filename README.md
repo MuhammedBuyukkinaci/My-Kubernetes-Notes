@@ -54,7 +54,7 @@ Listing my [Kubernetes](https://kubernetes.io/docs) Notes. It will cover notes t
 
 12) There is a component named cloud controller manager. This components exists among managed cloud k8s services on AWS, Azure and GCP.
 
-13) kube-apiserver, etcd, kube-scheduler and kube-control-manager are known as control plane and working on master node.
+13) kube-apiserver, etcd, kube-scheduler and kube-control-manager are known as control plane and working on master node. Master nodes have a taint named __node-role.kubernetes.io/master:NoSchedule__.
 
 14) Workload doesn't run on master nodes. Master nodes can be one or many.
 
@@ -109,6 +109,8 @@ minikube start
 # To start with a different driver
 minikube start --driver=vmware
 minikube start --driver=podman
+# To add a new node to a k8s cluster
+minikube node add
 
 ```
 
@@ -350,7 +352,7 @@ spec:
 
 ### Multi Containers Pod
 
-34) One pod may have multiple containers. This is useful when tracking application(fluentd, sentry etc) tracks our main application(Jjongo, Spring Boot etc). Containers which are in the same pod can connect to each other via localhost. Their IP addresses are the same. No configuration needed. One volume can be mounted to both containers which are in the same pod. **files/pods/podmulticontainer.yaml**
+34) One pod may have multiple containers. This is useful when tracking application(fluentd, sentry etc) tracks our main application(Django, Spring Boot etc). fluentd is a well-known log collection application in k8s world. Containers which are in the same pod can connect to each other via localhost. Their IP addresses are the same. No configuration needed. One volume can be mounted to both containers which are in the same pod. **files/pods/podmulticontainer.yaml**
 
 35) Sidecar container is the second container in a pod if it exists. Related to above point(34).  
 
@@ -670,6 +672,130 @@ resources:
 ### Environment Variables
 
 90) We shouldn't hard-code some credentials. You should pass them via environment variables. Take a look at **files/pods/podenv.yaml**
+
+# Kubernetes 102
+
+### Volumes
+
+1) Containers are suitable for stateless applications.
+
+2) Ephemeral volumes are able to store information out of pods. 2 containers in a pod are able to access to the same ephemeral volume at the same time. It has 2 types:
+  - emptyDir: It is created when a pod is allocated to a node. The folder is created randomly. It will live until pod is dead. If pod dies, its contant will be deleted permanently.
+  - hostPath: Similar to emptyDir. The folder isn't random and determined before. It is useful when a pod is necessary to access to a directory on worker node. It is a nish case. Don't use it if you don't know what to do exactly.
+
+3) In order to create a volume, it should be defined under spec. Take a look at **files/volumes/podvolumeemptydir.yaml** and **files/volumes/podvolumehostpath.yaml**.
+
+4) If a problem occurs and a container in a pod is restarted, it means container is killed and a new container is created. However, the data in the volume is going to persist.
+
+5) Volumes are useful between different containers of a pod.
+
+6) We don't have to mount folders only. We can mount files too. 3 different options for hostPath volumes. Take a look at **files/volumes/podvolumehostpath.yaml**.
+
+### Secrets
+
+7) Secret is a k8s object too. It can be used to store username, password and ssh keys etc. Secrets are enabling us to separate applications from sensitive credentials. Secret is much more flexible than hard coding or environment variables. Secrets can be created declaratively or imperatively. When a secret is created, they are stored under etcd in the format of base64, which means they aren't encrypted. This encription is carried out by managed k8s services like AKS, EKS and GKE automatically. We can also encrypt k8s secrets on our Vanilla k8s cluster(but not covered in the course). If a user is able to create pods, that user is also able to create secrets too. All files are under **files/secretconfigmap/**. Take a look at **files/secretconfigmap/secret.yaml** for an example secret. 
+
+8) Secrets and pods should be in the same namespace.
+
+9) There exists 8 different secret types. Some are opaque(secret), basic authentication etc.
+
+10) To list secrets, run `kubectl get secrets`.
+
+11) To create a secret imperatively, run
+
+```shell
+# via shell
+kubectl create secret generic SECRET_NAME --from-literal=db_server=db.example.com --from-literal=db_username=dbuser
+# via file
+kubectl create secret generic SECRET_NAME --from-file=db_server=server.txt --from-file=db_user=username.txt
+# via json(having key-pair values )
+kubectl create secret generic SECRET_NAME --from-file=config.json
+```
+
+12) In order to pass secrets to pods, take a look at **files/secretconfigmap/podsecret.yaml**. There are 3 ways to pass secrets to pods. All methods are exaplified in **files/secretconfigmap/podsecret.yaml**.
+
+### ConfigMap
+
+13) Configmap is a k8s object. Configmaps are created in the same way and used for the same purposes. If we don't have to store sensitive information, configmap is the way to go. Configmaps are used to store non-sensitive data.
+
+14) Take a look at **files/secretconfigmap/configmap.yaml** for an example secret. 
+
+### Node Affinity
+
+15) It is similar to NodeSelector, which is enabling us to allocate specific pods to specific nodes. Let's assume our cluster is consisting of many nodes and some are CPU-optimized, some are RAM-optimized, some are SSD-Optimized. Thanks to Node Affinity, we can assign some pods to RAM optimized nodes and some pods to SSD optimized nodes.
+
+
+16) Take a look at **files/affinity/podnodeaffinity.yaml**.
+
+### Pod Affinity
+
+17) It is related to selecting our pod's nodes. If we want a pod to run with another pod, we can do this via Pod Affinity. In addition to that, we can assign a pod to a node that doesn't have a specific pod etc.
+
+18) If a FE pod is reading data from a DB pod, they should co-exist in the same AZ(Availablity Zone). We can do this via Pod Affinity.
+
+19) Pod Affinity makes much more sense for clusters composed of many nodes.
+
+### Taint & Toleration
+
+20) Node affinity and pod affinity aren't enough sometimes. Therefore, we need more settings.
+
+21) To add a taint(platform=production) to a node
+
+```
+kubectl taint node NODE_NAME platform=production:NoSchedule
+```
+
+22) To delete a taint(platform) from a node
+
+```shell
+kubectl taint node minikube platform-
+```
+
+23) If a node doesn't tolerate a pod, it will not host that pod.
+
+24) Take a look at **files/tainttoleration/podtoleration.yaml**.
+
+25) If we want a pod to run on a specific node, it is related to node affinity. If we want our node to run only specific pods, it is related to taint & toleration.
+
+### DaemonSet
+
+26) Daemonset is a k8s object. It is similar to deployment object.
+
+27) It is enabling log collection apps & storage provisioning apps to be deployed easily. A daemonset is created and then added to existent nodes. If a node is added to the cluster, it will be added to new node too.
+
+28) Take a look at **files/daemonset/daemonset.yaml**.
+
+29) We can enable Daemonset to run on only some nodes.
+
+30) To list daemonsets, trigger `kubectl get daemonset`.
+
+### Persistent Volume(PV) & Persistent Volume Claim(PVC)
+
+31) Ephemeral Volume isn't handy in the scenario that stores sensitive data. Let's assume we store backup of our DB on a node in a k8s cluster. When our node is down, the ephemeral volume in the node will be down too. Sensitive data is going to lose. Thus, it is required not to keep DB data in an ephemeral volume.
+
+32) Persistent Volume comes in handy in this scenario. Persisten Volume is a k8s object. Persistent volume is a volume accessed by all nodes of a k8s cluster and it is located outside of k8s cluster. The lifetime of persisten volume will be much higher than the lifetime of ephemeral volume.
+
+33) In order to create persistent volume, we should configure. CSI (Container Storage Interface) is used in this case. CSI is a standard of configuring k8s's storage infrastructure. Some drivers are provided in k8s.
+
+34) Persistent Volume is visualized below
+
+![persistent_volume](./images/013.png)
+
+35) AWS S3 can't be linked to pods as persistent volumes. NFS Servers are generally used as persistent volumes.
+
+36) The files are under **files/pvpvc/**.
+
+37) To list persistent volumes
+
+```shell
+kubectl get pv
+```
+
+38) The creation of persistent volumes are made by System Engineers. Their usage is carried out by developers.
+
+39) Pv's are attached to pvc's. Pvc's are attached to pods.
+
+
 
 
 
