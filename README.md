@@ -795,6 +795,21 @@ kubectl get pv
 
 39) Pv's are attached to pvc's. Pvc's are attached to pods.
 
+### StorageClass(SC)
+
+40) It is an alternative to Persistent Volume. It is similar to automation of pv's. It is a recipe. Developers use StorageClass as a template to create persistent volumes. Cloud Service Providers are serving storageclass in an automatic way.
+
+41) To list storageclasses
+
+```shell
+kubectl get storageclass
+```
+
+42) The files are under **files/storageclass/**.
+
+43) System Admins create storageclasses for different purposes: (cpu optimized, ram optimized etc.)
+
+
 
 
 
