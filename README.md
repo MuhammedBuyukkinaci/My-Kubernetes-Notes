@@ -809,12 +809,43 @@ kubectl get storageclass
 
 43) System Admins create storageclasses for different purposes: (cpu optimized, ram optimized etc.)
 
+### StatefulSet
 
+44) It is a k8s object. It is solving the dockerization problem of master-slave applications. It is similar to deployment.
 
+![stateful](./images/014.png)
 
+45) Statefulset is used in pods of cassandra, mongodb etc.
 
+46) The files are under **files/statefulset/**.
 
+47) To scale number of pds created by statefulset 
 
+```shell
+kubectl scale statefulset POD_NAME --replicas=3
+```
+
+48) Headless service is used in statefulset(I didn't understand here)
+
+### Job
+
+49) It is a k8s object. It creates one or multiple pods. If pod fails, pod is recreated. When a job is done, pods aren't deleted and thus logs are checked. Maintenance scripts or db scripts can be implemented with job.
+
+50) Job is used in one-time tasks. Let's assume your app is connecting to an S3 bucket and getting the names of files. It isn't a regular job. Objects are accumulating a lot and then you run the job.
+
+51) The files are under **files/jobcronjob/job.yaml**.
+
+### Cronjob
+
+52) It is a k8s object. It is a k8s version of crontab. It is running a job regularly.
+
+53) The files are under **files/jobcronjob/cronjob.yaml**.
+
+54) To list cronjobs
+
+```shell
+kubectl get cronjobs.batch
+```
 
 
 
