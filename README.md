@@ -847,6 +847,100 @@ kubectl scale statefulset POD_NAME --replicas=3
 kubectl get cronjobs.batch
 ```
 
+### Authentication
+
+55) User creation and id verification are carried out out of k8s cluster. All of these authentication are carried out by cloud service providers.
+
+56) Authentication ways of k8s. One of them is chose during the installation of kube api server.
+
+![authentication](./images/015.png)
+
+57) Minikube uses 509 Client Certificates. Kubernetes doesn't hold user objects. It extracts who we are from the certificates.
+
+58) Developers should create private keys first and CSR files and then send these to SysAdm. CSR are files that tell us certificate providers that it needs a certificate.
+
+```shell
+# Developer runnnig the following commands
+# To create private key
+openssl genrsa -out file_name.key 2048
+# To create a CSR file
+openssl req -new -key file_name.key -out file_name.csr -subj "/CN=email@mail.com/0=DevelopmentTeam"
+```
+
+59) CertificateSigningRequest is a k8s object. It creates csr object, which is a k8s object too.The README file under **files/authentication/** is showing the necessary yaml file to create csr object.
+
+60) To list csr objects(run by sysadmins)
+
+```shell
+kubectl get csr
+```
+
+61) To approve a csr in order to create a certificate (run by sysadmins)
+
+```shell
+kubectl certificate approve CSR_NAME
+```
+
+62) To view encoded certificate (run by sysadmins)
+
+```shell
+kubectl get csr CSR_NAME -o yaml
+```
+
+63) To get decoded certificate and dump it to a crt file (run by sysadmins). CSR_NAME.crt is sent to developer.
+
+```shell
+kubectl get csr CSR_NAME -o jsonpath='{.status.certificate}' | base64 -d >> CSR_NAME.crt 
+```
+
+64) To set credentials(run by developer)
+
+```
+kubectl config set-credentials email@mail.com --client-certiciate=CSR_NAME.crt --client-key=file_name.key
+```
+
+65) To create a new context in order to connect to a k8s cluster (run by developer)
+
+```
+kubectl config set-context NEW_CONTEXT_NAME --cluster=minikube --user=email@mail.com 
+```
+
+66) To use the above context (run by developer). Now, we are able to connect to the k8s cluster(authorization is ok) but we don't have any authorization.
+
+```shell
+kubectl config use-context NEW_CONTEXT_NAME
+```
+
+### RBAC(Role Based Access Control)
+
+67) Authentication is not equal to Authorization. Having authentication doesn't mean having authorization. Authorization is carried out via RBAC(Role Based Access Control).
+
+68) The relationship between role, user and role binding.
+
+![authentication](./images/016.png)
+
+69) The files are under **files/rbac/**.
+
+70) Role is a k8s object that has rules. An example role is **files/rbac/role.yaml**. It is used to give authorization to a namespace.
+
+71) Clusterrole is a k8s object. It is used to give authorization to the whole cluster. It is used with non-namespace k8s objects.
+
+72) Role binding is a k8s object. It is used in binding a role to a user.
+
+73) Cluster role binding is a k8s object. It is used in binding a clusterrole to a non-namespace k8s object.
+
+74) If we want to equip a user with administrator role, bind cluster-role to that user.
+
+
+### Service Account
+
+75) Service Account is a k8s object. It is necessary for a pod to communicate with API server. Service Account is used in this scenario.
+
+76) Service Account is the only k8s object thaat is an account. It isn't used by people. It is used by apps.
+
+77) The files are under **files/serviceaccount/**.
+
+78) To list service accounts, trigger `kubectl get sa`.
 
 
 
