@@ -459,6 +459,8 @@ kubectl get pods --name NAMESPACE_NAME
 kubectl get pods --n NAMESPACE_NAME
 # to list all pods in all namespaces
 kubectl get pods --all-namespaces
+# To list all objects in a namespace
+kubectl get all -n ingress-nginx
 ```
 
 54) To create a namespace
@@ -601,7 +603,7 @@ kubectl rollout resume deployment rolldeployment
 
 ### Service
 
-78) Service is a k8s object. It can be defined in a yaml file declaratively or using kubectl imperatively. It is related to networking. Pod are behind Service objects. It provides service discovery and load balancing basically. 4 types of Service objects are below:
+78) Service is a k8s object. It runs on OSI Layer 4. It can be defined in a yaml file declaratively or using kubectl imperatively. It is related to networking. Pod are behind Service objects. It provides service discovery and load balancing basically. 4 types of Service objects are below:
   - ClusterIP: It can be used in binding frontend appications to backend applications internally.
   - NodePort: Enables us to publish our apps to outer networks and internet.
   - LoadBalancer: Can be used in managed k8s services only.
@@ -942,13 +944,31 @@ kubectl config use-context NEW_CONTEXT_NAME
 
 78) To list service accounts, trigger `kubectl get sa`.
 
+### Ingress
 
+79) Let's assume 2 have websites as **example.com** from app 1 and **example.com/contact**. Both have the same domain name but served from differnt applications. A load balancer on OSI layer 4 doesn't work well for this circumstance. Thus, we need a load balancer at OSI layer 7. We solve this problem via ingress controller and ingress objects.
 
+80) **Ingress controller** is a layer 7 application loadbalancer for k8s. Nginx, Traefik & HAproxy are some examples. We install ingress controller on k8s cluster. If we work on cloud, this ingress controller is published to the internet via an LB and we get a public IP address.
 
+81) **Ingress object**s are directing requests to relevant pods. Ingress is a k8s object. Ingress controllers are taking ingress objects into consideration and sending requests to relevant pods.
 
+82) Run minikube via `minikube start --driver=hyperv` for the practice.
 
+83) To list addons on minikube `minikube addons list`.
 
+84) To enable ingress on `minikube addons enable ingress`.
 
+85) All files are under **files/ingress/**.
+
+86) Load Balancer & Ingress & Service & Pod
+
+![ingress](./images/017.png)
+
+87) The documentation is [here](https://kubernetes.io/docs/concepts/services-networking/ingress/).
+
+88) In order to configure ingress controller, we modify annotations on **files/ingress/appingress.yaml**
+
+89) In order to run multiple urls on a single IP, we should use ingress and ingress controller(NGINX).
 
 
 
