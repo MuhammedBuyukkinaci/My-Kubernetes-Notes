@@ -111,7 +111,8 @@ minikube start --driver=vmware
 minikube start --driver=podman
 # To add a new node to a k8s cluster
 minikube node add
-
+# To start a k8s cluster with 5 nodes(1 master node, 4 worker nodes)
+minikube start --node=5
 ```
 
 12) To check status of k8s cluster triggered via minikube,
@@ -131,6 +132,8 @@ minikube status
 
 ```list.sh
 kubectl get nodes
+# an abbreviation
+kubectl get no
 ```
 
 14) To purge k8s cluster
@@ -821,13 +824,13 @@ kubectl get storageclass
 
 46) The files are under **files/statefulset/**.
 
-47) To scale number of pds created by statefulset 
+47) To scale number of pods created by statefulset 
 
 ```shell
 kubectl scale statefulset POD_NAME --replicas=3
 ```
 
-48) Headless service is used in statefulset(I didn't understand here)
+48) Headless service is used in statefulset(I didn't understand here). It enables us to access to the pods via their names one by one.
 
 ### Job
 
@@ -948,9 +951,9 @@ kubectl config use-context NEW_CONTEXT_NAME
 
 79) Let's assume 2 have websites as **example.com** from app 1 and **example.com/contact**. Both have the same domain name but served from differnt applications. A load balancer on OSI layer 4 doesn't work well for this circumstance. Thus, we need a load balancer at OSI layer 7. We solve this problem via ingress controller and ingress objects.
 
-80) **Ingress controller** is a layer 7 application loadbalancer for k8s. Nginx, Traefik & HAproxy are some examples. We install ingress controller on k8s cluster. If we work on cloud, this ingress controller is published to the internet via an LB and we get a public IP address.
+80) **Ingress controller** is a layer 7 application loadbalancer for k8s. Nginx, Traefik & HAproxy are some examples. We install ingress controller on k8s cluster. If we work on cloud, this ingress controller is published to the internet via an LB and we get a public IP address. Ingress controller makes path-based routing.
 
-81) **Ingress object**s are directing requests to relevant pods. Ingress is a k8s object. Ingress controllers are taking ingress objects into consideration and sending requests to relevant pods.
+81) **Ingress object**s are directing requests to relevant pods. Ingress is a k8s object. Ingress controllers are taking ingress objects into consideration and sending requests to relevant pods. To list ingress objects, run `kubectl get ingress -A`.
 
 82) Run minikube via `minikube start --driver=hyperv` for the practice.
 
@@ -969,6 +972,39 @@ kubectl config use-context NEW_CONTEXT_NAME
 88) In order to configure ingress controller, we modify annotations on **files/ingress/appingress.yaml**
 
 89) In order to run multiple urls on a single IP, we should use ingress and ingress controller(NGINX).
+
+### Project
+
+90) The solution of the project is under **files/proje**
+
+91) Let's assume 2 have deployments. One is DB, the other is a wordpress application. Wordpress app will read data from DB. In order for wordpress to read data from DB, we should create a k8s service object in the type of ClusterIP for DB and provide it for wordpress.
+
+![ingress](./images/018.png)
+
+92) In order for wordpress to be exposed to the internet, there are 3 ways:
+  - A service in the type of nodeport
+  - A service in the type of load balancder
+  - Ingress
+
+93) [jwt.io](https://jwt.io) is a website to encode and decode json web tokens.
+
+94) In order to delete all pods on a node
+
+```shell
+# local data means emptydir volumes etc.
+# to evict all pods
+kubectl drain NODE_NAME --ignore-daemonsets --delete-local-data
+# to prevent pods from being scheduled on the node
+kubectl cordon NODE_NAME
+# to enable the node to accept pods
+kubectl uncordon NODE_NAME
+```
+
+# Extras
+
+
+
+
 
 
 
