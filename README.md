@@ -1002,6 +1002,21 @@ kubectl uncordon NODE_NAME
 
 # Extras
 
+## Dashboard
+
+1) Official dashboard of k8s is [here](https://github.com/kubernetes/dashboard).
+
+2) Prefer using CLI over using Dashboard.
+
+3) It can be installed on a remote k8s cluster via a yaml file. If we want to install it on minikube cluster, it is available as an add-on via `minikube addons enable dashboard`. It is also recommended to install metrics-server via `minikube addons enable metrics-server`. To run dashboard `minikube dashboard`.
+
+4) On dashboard, we can write a yaml file or upload a yaml file or fill out a form in order to create k8 objects.
+
+5) [Lens](https://k8slens.dev/) is an alternative to default dashboard. It is a 3rd party solution. We can have multiple different clusters on Lens. Lens isn't installed on k8s cluster. It is installed on a local machine.
+
+6) [Headlamp](https://github.com/headlamp-k8s/headlamp) is another alternative to default dashboard.
+
+
 
 
 
