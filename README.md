@@ -702,7 +702,7 @@ resources:
 
 8) Secrets and pods should be in the same namespace.
 
-9) There exists 8 different secret types. Some are opaque(secret), basic authentication etc.
+9) There exists 8 different secret types. Some are opaque(secret), basic authentication, docker-registry etc.
 
 10) To list secrets, run `kubectl get secrets`.
 
@@ -1002,7 +1002,7 @@ kubectl uncordon NODE_NAME
 
 # Extras
 
-## Dashboard
+### Dashboard
 
 1) Official dashboard of k8s is [here](https://github.com/kubernetes/dashboard).
 
@@ -1016,10 +1016,45 @@ kubectl uncordon NODE_NAME
 
 6) [Headlamp](https://github.com/headlamp-k8s/headlamp) is another alternative to default dashboard.
 
+### ImagePullPolicy and Image Secret
 
+7) The files are under **files/imagesecret/**.
 
+8) We don't publish our Docker images in a real-life scenario.
 
+9) 3 fields required: name, password and url. We create k8s secrets in the format of docker-registry using `kubectl create secret docker-registry DOCKER_REGISTRY_SECRET_NAME --docker-server=FILL_HERE --docker-username=FILL_HERE --docker-pasword=FILL_HERE` and pass these secrets to a yaml file. Take a look at **files/imagesecret/README.md**.
 
+10) **imagePullPolicy** can have one of 3 values: **Always**, **IfNotPresent**, **Never**.  It is under containers key in the yaml file. Take a look at **files/imagesecret/podwithsecret.yaml**. If we are using a latest image, k8s defaults **imagePullPolicy** to Always.
 
+### StaticPod
+
+11) If we want to create pods via kubelet instead of sending a yaml file to API server, static pod is the way to go. Static pod isn't used in real life a lot. Static pod
+
+12) [Here](https://kubernetes.io/docs/tasks/configure-pod-container/static-pod/) is showing us what to do.
+
+13) We put yaml files under /etcd/kubernetes/manifests in master node and these yaml files will be triggered by kubelet.
+
+14) If want to create a static pod, put a yaml file under __/etcd/kubernetes/manifests__ and kubelet wil read that file and create a pod.
+
+### Network Policy
+
+15) Some reminders of k8s networking by default:
+
+  - Each pod should have a unique IP.
+  - Each pod should communicate with each other without NAT and irrespective of namespaces.
+  - Each pod should access to where the VM accesses.
+  - Each pod can be public to the outer world if it published to the outer world via ingress, nodeport service or loadbalancder service.
+
+16) There might be required to restrict pod accesses. For instance, we want a frontend pod to access to a backend node only. These restictions may cover IP or namespaces.
+
+17) NetworkPolicy is a k8s object.
+
+18) The files are under **files/networkpolicy/**. To view an example network policy file, look at **policy.yaml**.
+
+19) Restrictions can be over ip, namespace and pod.
+
+20) There can be multiple NetworkPolicies assigned to a single pod. The rules of multiple network policies are merged.
+
+21) If you want to use Network policies, you should use a CNI that supports network policies. The default of Minikube doesn't support network policies. Thus, it is required to use a CNI like calico, which supports network policies.
 
 
