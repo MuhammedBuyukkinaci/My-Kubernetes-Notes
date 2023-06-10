@@ -1057,4 +1057,70 @@ kubectl uncordon NODE_NAME
 
 21) If you want to use Network policies, you should use a CNI that supports network policies. The default of Minikube doesn't support network policies. Thus, it is required to use a CNI like calico, which supports network policies.
 
+### Helm
+
+22) [Helm](https://helm.sh) is a CNCF project. It is a client-side application. It is enabling us to install packages on kubernetes. It is a package management tool. It is recommended to continue with version of Helm.
+
+23) 3 important concepts of Helm are below:
+  - Chart: The packaged version of our app on k8s(Docker image).
+  - Release: The installed version of Chart(Docker container).
+  - Repository: A place where many helm charts can be collected and shared. There can be many charts in a repository. When we pull a repository, we pull many charts.
+
+24) [Artifact Hub](https://artifacthub.io/) is a way to search helm chart online. It is similar to docker hub.
+
+25) To search a project on [Artifact Hub](https://artifacthub.io/)
+
+```shell
+helm search hub wordpress
+```
+
+26) To search a project on repositories that we added to our local machine
+
+```shell
+helm search repo wordpress
+```
+
+27) To add a repository to the local machine
+
+```shell
+helm repo add bitnami https://charts.bitnami.com/bitnami
+```
+
+28) To install a release from a chart on a k8s cluster
+
+```shell
+helm install RELEASE_NAME CHART_NAME
+#an example
+helm install wordpress1 bitnami/wordpress
+#an example with namespace
+helm install wordpress1 bitnami/wordpress --namespace production
+```
+
+29) To view the status of a release
+
+```shell
+helm status RELEASE_NAME
+```
+
+30) To see values that can be modified in a chart
+
+```shell
+helm show values CHART_NAME
+# an example
+helm show values bitnami/wordpress
+```
+
+31) To delete a release
+
+```shell
+helm uninstall RELEASE_NAME
+# an example
+helm uninstall wordpress1
+```
+
+32) `helm upgrade` and `helm rollback` are 2 great ways of upgrading and rolling back a release.
+
+
+
+
 
