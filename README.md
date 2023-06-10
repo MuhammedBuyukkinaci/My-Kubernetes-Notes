@@ -1120,7 +1120,37 @@ helm uninstall wordpress1
 
 32) `helm upgrade` and `helm rollback` are 2 great ways of upgrading and rolling back a release.
 
+### Prometheus Stack
 
+33) 4 ways to monitor k8s cluster
 
+  - The status of the cluster
+  - The status of k8s objects
+  - The status of worker nodes(CPU, RAM, I/O information)
+  - The status of applications
 
+34) To view what happened to k8s cluster
+
+```shell
+kubectl get events -A
+```
+
+35) To view the statistics of a node
+
+```shell
+kubectl top node
+```
+
+36) [Prometheus](https://prometheus.io/) takes care of cluster, k8 objects and worker nodes. It takes data of k8s cluster and show them in a tool. Prometheus is pull-based. It runs on 9090 port. Prometheus is a metrics-server. It is a CNCF project. Prometheus is the standary way of collecting metrics in k8s.
+
+37)It can be installed on a k8s cluster or on a separate VM. If you have a k8s cluster, it is reasonable to install it on k8s cluster.
+
+38) Prometheus is complex. 
+![ingress](./images/019.png)
+
+39) [Grafana](https://grafana.com/) is a CNCF project. It is visualizing the k8s metrics data collected via Prometheus. Grafana can be used with MSSQL to visualize transaction logs, I/O statistics etc. There are lots of different ready dashboards. Some dashboards can accessed in the [marketplace](https://grafana.com/grafana/dashboards/).
+
+40) [Prometheus Community Kubernetes Helm Charts](https://github.com/prometheus-community/helm-charts) is a way to solve the complexity of prometheus. It installes prometheus and related components(stack) on top of a k8s cluster.
+
+41) The relevant files of prometheus is under **files/monitoring**
 
