@@ -607,7 +607,7 @@ kubectl rollout resume deployment rolldeployment
 ### Service
 
 78) Service is a k8s object. It runs on OSI Layer 4. It can be defined in a yaml file declaratively or using kubectl imperatively. It is related to networking. Pod are behind Service objects. It provides service discovery and load balancing basically. 4 types of Service objects are below:
-  - ClusterIP: It can be used in binding frontend appications to backend applications internally.
+  - ClusterIP: It can be used in binding frontend appications to backend applications internally. It is default service type.
   - NodePort: Enables us to publish our apps to outer networks and internet.
   - LoadBalancer: Can be used in managed k8s services only.
   - ExternalName:
@@ -1153,4 +1153,20 @@ kubectl top node
 40) [Prometheus Community Kubernetes Helm Charts](https://github.com/prometheus-community/helm-charts) is a way to solve the complexity of prometheus. It installes prometheus and related components(stack) on top of a k8s cluster.
 
 41) The relevant files of prometheus is under **files/monitoring**
+
+### EFK Stack
+
+42) EFK means Elastic, FluendD and Kibana.
+
+43) Elasticsearch is where logs of apps are stored. Kibana is a visualization tool of data stored in ElasticSearch. Logstash is a tool to collect logs from apps. Fluentd is an alternative to logstash. Fluentd is a CNCF project.
+
+44) EFK(Elasticsearch, Fluentd, Kibana) and ELK(Elasticsearch Logstash Kibana) are 2 different stacks.
+
+45) The relevant file is **files/monitoring/efk-stack.yml**.
+
+46) Fluentd is installed on worker nodes and sends logs to elasticsearch. It is required to install fluentd on each worker node to collect all logs.
+
+47) Kibana runs on 5601 port.
+
+48) EFK stack can be installed on a k8s cluster.
 
