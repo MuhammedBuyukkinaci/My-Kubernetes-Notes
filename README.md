@@ -1146,7 +1146,7 @@ kubectl top node
 37)It can be installed on a k8s cluster or on a separate VM. If you have a k8s cluster, it is reasonable to install it on k8s cluster.
 
 38) Prometheus is complex. 
-![ingress](./images/019.png)
+![Prometheus](./images/019.png)
 
 39) [Grafana](https://grafana.com/) is a CNCF project. It is visualizing the k8s metrics data collected via Prometheus. Grafana can be used with MSSQL to visualize transaction logs, I/O statistics etc. There are lots of different ready dashboards. Some dashboards can accessed in the [marketplace](https://grafana.com/grafana/dashboards/).
 
@@ -1169,4 +1169,53 @@ kubectl top node
 47) Kibana runs on 5601 port.
 
 48) EFK stack can be installed on a k8s cluster.
+
+### Service Mesh
+
+49) Let's assume our app is composed of 4 components: Frontend, Authentication, Backend, Redis. In this scenario, it might be required to encrypt data transferred between pods. Encrption is generally implemented in cloud-based applications because we don't have access to hardware of Cloud platforms.
+
+50) Service mesh is a way to deal with observability, security and reliability for microservice architecture. Service mesh is not a k8s object. Some pratices of Service mesh:
+  - Encryiption of data between services
+  - Restriction via rules like pod A can't access to pod B, pod A should response a 5000 error if it doesn't access to pod C etc.
+
+51) Service Mesh doest't require to change the code. It works on infrastructure level.
+
+52) Some service mesh solutions:
+  - [Istio](https://istio.io/): An open source project, not owned by CNCF. It is kinda complexity. It runs on HTTP or GRPC protocols, which means it runs on tcp level7, not on level 4. It encrypts data via mutual TLS encryption. It supports traffic splitting, canary deployment and blue-green deployment.
+  - [LinkerD](https://linkerd.io/): Covers 80% of what Istio provides. It is a CNCF project. It is simple to start. It is open source.
+
+53) LinkerD has a different CLI and GUI than k8s.
+
+54) All service mesh solutions inject a sidecar container into a pod and runs in this way. LinkerD example
+
+![service_mesh](./images/020.png)
+
+55) An example of multiples services shown on LinkerD
+
+![service_mesh](./images/021.png)
+
+56) Service mesh solutions are faciliating the debugging of apps. It shows us success rates of pods in an app. Hereby, we can easily find where the error occurs.
+
+### CRD(Custom Resource Definition) & Operator
+
+57) THanks to CRD, we can create a custom object type excep Pod, Service, Deployment etc.
+
+58) Operators are dealing with automatization on k8s. The most known operator is [Operator Framework](https://operatorframework.io/). Operator Framework is a product of Redhat.
+
+### CKA & CKAD
+
+59) CKA means certified kubernetes administrator and CKAD means certified kubernetes application developer.
+
+60) The exams are listed [here](https://training.linuxfoundation.org/).
+
+61) It is allowed to connect to [kubernetes.io](https://kubernetes.io)
+
+62) Cheat is [here](https://kubernetes.io/docs/reference/kubectl/cheatsheet/).
+
+63) The curriculum is [here](https://github.com/cncf/curriculum)
+
+
+
+
+
 
